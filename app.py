@@ -125,27 +125,36 @@ class QAModel:
                 use_auth_token = hf_token
             
             with st.spinner(f"Loading model {model_name}..."):
-                # Load tokenizer with authentication if needed
-                if use_auth_token:
-                    self.tokenizer = AutoTokenizer.from_pretrained(
-                        model_name, 
-                        use_auth_token=use_auth_token
-                    )
-                    self.model = AutoModelForSeq2SeqLM.from_pretrained(
-                        model_name, 
-                        use_auth_token=use_auth_token
-                    )
-                else:
-                    self.tokenizer = AutoTokenizer.from_pretrained(model_name)
-                    self.model = AutoModelForSeq2SeqLM.from_pretrained(model_name)
-                
-                if self.tokenizer.pad_token is None:
-                    self.tokenizer.pad_token = self.tokenizer.eos_token
-                
-                self.model.to(self.device)
-                self.model.eval()
-            
-            st.success(f"✅ Model loaded successfully!")
+                try:
+                    # Load tokenizer with authentication if needed
+                    if use_auth_token:
+                        self.tokenizer = AutoTokenizer.from_pretrained(
+                            model_name, 
+                            use_auth_token=use_auth_token
+                        )
+                        self.model = AutoModelForSeq2SeqLM.from_pretrained(
+                            model_name, 
+                            use_auth_token=use_auth_token
+                        )
+                    else:
+                        self.tokenizer = AutoTokenizer.from_pretrained(model_name)
+                        self.model = AutoModelForSeq2SeqLM.from_pretrained(model_name)
+                    
+                    if self.tokenizer.pad_token is None:
+                        self.tokenizer.pad_token = self.tokenizer.eos_token
+                    
+                    self.model.to(self.device)
+                    self.model.eval()
+                    
+                    st.success(f"✅ Model loaded successfully!")
+                    
+                except ImportError as import_error:
+                    if "sentencepiece" in str(import_error):
+                        st.error("❌ SentencePiece library error. This is a known issue with Python 3.13.")
+                        st.error("💡 Solution: Please set Python version to 3.11 in Streamlit Cloud settings.")
+                        st.info("📋 Go to your app settings → Advanced settings → Python version → Select 3.11")
+                    else:
+                        raise import_error
             
         except Exception as e:
             st.error(f"❌ Error loading model: {str(e)}")
@@ -153,6 +162,8 @@ class QAModel:
                 st.error("Authentication failed. Please check your HuggingFace token.")
             elif "404" in str(e):
                 st.error("Model not found. Please check the model path.")
+            elif "sentencepiece" in str(e):
+                st.error("💡 Please set Python version to 3.11 in Streamlit Cloud settings.")
             else:
                 st.error("Please check your internet connection and try again.")
             self.model = None
