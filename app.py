@@ -244,32 +244,30 @@ class QAModel:
             return "Model not loaded. Please check the model path."
         
         try:
-            # Improved prompt engineering for better answers
+            # Simplified prompt for faster generation
             if context:
-                input_text = f"Context: {context}\n\nQuestion: {question}\n\nProvide a clear and concise answer:"
+                input_text = f"Context: {context}\nQuestion: {question}\nAnswer:"
             else:
-                input_text = f"Question: {question}\n\nProvide a clear and concise answer:"
+                input_text = f"Question: {question}\nAnswer:"
             
             inputs = self.tokenizer(
                 input_text, 
                 return_tensors="pt", 
-                max_length=512,  # Increased for better context handling
+                max_length=256,  # Reduced for faster processing
                 truncation=True, 
                 padding=True
             )
             inputs = {k: v.to(self.device) for k, v in inputs.items()}
             
-            # Improved generation parameters for better quality answers
+            # Optimized generation parameters for speed
             generation_params = {
-                "max_length": 200,  # Increased for more detailed answers
-                "min_length": 20,   # Ensure minimum answer length
-                "num_beams": 4,     # Increased for better quality
+                "max_length": 100,  # Shorter answers for speed
+                "min_length": 10,   # Minimum answer length
+                "num_beams": 2,     # Reduced for speed
                 "early_stopping": True,
-                "do_sample": True,  # Enable sampling for more natural responses
-                "temperature": 0.7, # Add some creativity
-                "top_p": 0.9,      # Nucleus sampling
+                "do_sample": False,  # Deterministic for speed
                 "pad_token_id": self.tokenizer.pad_token_id,
-                "repetition_penalty": 1.2  # Prevent repetitive text
+                "repetition_penalty": 1.1  # Reduced penalty
             }
             
             with torch.no_grad():
@@ -278,7 +276,7 @@ class QAModel:
             answer = self.tokenizer.decode(outputs[0], skip_special_tokens=True)
             answer = answer.strip()
             
-            # Enhanced answer cleaning and formatting
+            # Simplified answer cleaning
             if "Answer:" in answer:
                 answer = answer.split("Answer:")[-1].strip()
             elif "answer:" in answer:
@@ -295,7 +293,7 @@ class QAModel:
             answer = answer.replace("Provide a clear answer:", "").strip()
             
             # Validate answer quality
-            if len(answer) < 10 or answer.lower() in ['', 'none', 'unknown', 'error', 'n/a', 'i don\'t know', 'i do not know']:
+            if len(answer) < 5 or answer.lower() in ['', 'none', 'unknown', 'error', 'n/a', 'i don\'t know', 'i do not know']:
                 return "I'm sorry, I couldn't generate a proper answer for this question. Please try rephrasing your question or providing more context."
             
             # Ensure the answer starts with a capital letter and ends properly
@@ -355,16 +353,6 @@ def main():
         st.session_state.current_answer = ""
     if 'show_gpu_diagnostics' not in st.session_state:
         st.session_state.show_gpu_diagnostics = False
-    if 'selected_sample_question' not in st.session_state:
-        st.session_state.selected_sample_question = None
-    
-    # Handle sample question selection
-    if st.session_state.selected_sample_question is not None:
-        st.session_state.question_input = st.session_state.selected_sample_question
-        st.session_state.context_input = ""
-        st.session_state.current_answer = ""
-        st.session_state.selected_sample_question = None
-        st.rerun()
     
     # Main header
     st.markdown('<h1 class="main-header">🤖 AI Question Answering System</h1>', unsafe_allow_html=True)
@@ -452,11 +440,25 @@ def main():
         # Generate button
         if st.button("🚀 Generate Answer", type="primary", use_container_width=True):
             if question.strip():
+                # Create a progress bar with estimated time
+                progress_bar = st.progress(0)
+                status_text = st.empty()
+                
+                status_text.text("🔄 Loading model and generating answer...")
+                progress_bar.progress(25)
+                
                 with st.spinner("Generating answer..."):
                     answer = st.session_state.qa_model.generate_answer(question, context)
+                    progress_bar.progress(100)
+                    status_text.text("✅ Answer generated successfully!")
+                    
                     st.session_state.current_answer = answer
                     st.session_state.question_input = question
                     st.session_state.context_input = context
+                
+                # Clear progress indicators
+                progress_bar.empty()
+                status_text.empty()
                 st.rerun()
             else:
                 st.warning("Please enter a question.")
@@ -468,13 +470,17 @@ def main():
     
     with col2:
         st.markdown("### 📋 Sample Questions")
+        st.markdown("*Click to copy questions to input field*")
         
-        # Load sample questions
+        # Load sample questions and display as text (not buttons)
         sample_questions = load_qa_dataset()
         
         for i, sample_q in enumerate(sample_questions, 1):
-            if st.button(f"Q{i}: {sample_q}", key=f"sample_{i}", use_container_width=True):
-                st.session_state.selected_sample_question = sample_q
+            # Create a clickable text that copies to clipboard
+            if st.button(f"📋 Q{i}: {sample_q}", key=f"copy_{i}", use_container_width=True):
+                st.session_state.question_input = sample_q
+                st.session_state.context_input = ""
+                st.session_state.current_answer = ""
                 st.rerun()
         
         st.markdown("---")
