@@ -414,6 +414,17 @@ def main():
     if st.session_state.show_gpu_diagnostics:
         check_gpu_setup()
     
+    # Clear All button in sidebar
+    st.sidebar.markdown("---")
+    if st.sidebar.button("🗑️ Clear All", use_container_width=True, type="secondary"):
+        # Reset all session state variables
+        st.session_state.question_input = ""
+        st.session_state.context_input = ""
+        st.session_state.current_answer = ""
+        st.rerun()
+    
+    st.sidebar.markdown("*Clear all inputs and answers*")
+    
     # Main content area
     col1, col2 = st.columns([2, 1])
     
@@ -437,31 +448,44 @@ def main():
             key="context_input_new"
         )
         
-        # Generate button
-        if st.button("🚀 Generate Answer", type="primary", use_container_width=True):
-            if question.strip():
-                # Create a progress bar with estimated time
-                progress_bar = st.progress(0)
-                status_text = st.empty()
-                
-                status_text.text("🔄 Loading model and generating answer...")
-                progress_bar.progress(25)
-                
-                with st.spinner("Generating answer..."):
-                    answer = st.session_state.qa_model.generate_answer(question, context)
-                    progress_bar.progress(100)
-                    status_text.text("✅ Answer generated successfully!")
+        # Button row for Generate and Clear
+        col1_btn1, col1_btn2 = st.columns([3, 1])
+        
+        with col1_btn1:
+            # Generate button
+            if st.button("🚀 Generate Answer", type="primary", use_container_width=True):
+                if question.strip():
+                    # Create a progress bar with estimated time
+                    progress_bar = st.progress(0)
+                    status_text = st.empty()
                     
-                    st.session_state.current_answer = answer
-                    st.session_state.question_input = question
-                    st.session_state.context_input = context
-                
-                # Clear progress indicators
-                progress_bar.empty()
-                status_text.empty()
+                    status_text.text("🔄 Loading model and generating answer...")
+                    progress_bar.progress(25)
+                    
+                    with st.spinner("Generating answer..."):
+                        answer = st.session_state.qa_model.generate_answer(question, context)
+                        progress_bar.progress(100)
+                        status_text.text("✅ Answer generated successfully!")
+                        
+                        st.session_state.current_answer = answer
+                        st.session_state.question_input = question
+                        st.session_state.context_input = context
+                    
+                    # Clear progress indicators
+                    progress_bar.empty()
+                    status_text.empty()
+                    st.rerun()
+                else:
+                    st.warning("Please enter a question.")
+        
+        with col1_btn2:
+            # Clear button
+            if st.button("🗑️ Clear All", use_container_width=True):
+                # Reset all session state variables
+                st.session_state.question_input = ""
+                st.session_state.context_input = ""
+                st.session_state.current_answer = ""
                 st.rerun()
-            else:
-                st.warning("Please enter a question.")
         
         # Display answer
         if st.session_state.current_answer:
