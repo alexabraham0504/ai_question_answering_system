@@ -75,8 +75,7 @@ def check_pytorch_cuda():
 def check_gpu_libraries():
     """Check if GPU optimization libraries are installed"""
     libraries = {
-        'xformers': 'Memory efficient attention',
-        'flash_attn': 'Flash attention for faster computation'
+        'xformers': 'Memory efficient attention'
     }
     
     all_installed = True
@@ -123,7 +122,7 @@ def main():
         print("1. Install NVIDIA drivers from: https://www.nvidia.com/drivers/")
         print("2. Install CUDA toolkit from: https://developer.nvidia.com/cuda-downloads")
         print("3. Install PyTorch with CUDA: pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu118")
-        print("4. Install GPU libraries: pip install xformers flash-attn")
+        print("4. Install GPU libraries: pip install xformers")
 
 if __name__ == "__main__":
     main() 

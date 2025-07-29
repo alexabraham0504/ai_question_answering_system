@@ -178,11 +178,11 @@ class QAModel:
                     if use_auth_token:
                         self.tokenizer = AutoTokenizer.from_pretrained(
                             model_name, 
-                            use_auth_token=use_auth_token
+                            token=use_auth_token
                         )
                         self.model = AutoModelForSeq2SeqLM.from_pretrained(
                             model_name, 
-                            use_auth_token=use_auth_token,
+                            token=use_auth_token,
                             torch_dtype=torch.float16 if self.device.type == "cuda" else torch.float32
                         )
                     else:
@@ -355,6 +355,16 @@ def main():
         st.session_state.current_answer = ""
     if 'show_gpu_diagnostics' not in st.session_state:
         st.session_state.show_gpu_diagnostics = False
+    if 'selected_sample_question' not in st.session_state:
+        st.session_state.selected_sample_question = None
+    
+    # Handle sample question selection
+    if st.session_state.selected_sample_question is not None:
+        st.session_state.question_input = st.session_state.selected_sample_question
+        st.session_state.context_input = ""
+        st.session_state.current_answer = ""
+        st.session_state.selected_sample_question = None
+        st.rerun()
     
     # Main header
     st.markdown('<h1 class="main-header">🤖 AI Question Answering System</h1>', unsafe_allow_html=True)
@@ -464,9 +474,7 @@ def main():
         
         for i, sample_q in enumerate(sample_questions, 1):
             if st.button(f"Q{i}: {sample_q}", key=f"sample_{i}", use_container_width=True):
-                st.session_state.question_input = sample_q
-                st.session_state.context_input = ""
-                st.session_state.current_answer = ""
+                st.session_state.selected_sample_question = sample_q
                 st.rerun()
         
         st.markdown("---")
