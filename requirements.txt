@@ -1,10 +1,15 @@
 # Core ML libraries
+# For GPU support, install: pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu118
 torch>=2.0.0
 transformers>=4.30.0
 datasets>=2.12.0
 accelerate>=0.20.0
 peft>=0.4.0
 bitsandbytes>=0.41.0
+
+# GPU optimization libraries
+xformers>=0.0.20  # For memory efficient attention
+flash-attn>=2.0.0  # For faster attention computation
 
 # Streamlit and web
 streamlit>=1.25.0

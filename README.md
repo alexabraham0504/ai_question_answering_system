@@ -1,8 +1,52 @@
-# 🤖 AI Question Answering System
+# AI Question Answering System
 
-A complete question-answering system that fine-tunes the `flan-t5-small` model on science content and provides a beautiful Streamlit web interface. The system generates short, concise answers optimized for user experience.
+A Streamlit-based AI system that can answer questions about science topics using fine-tuned language models.
 
-## ✨ Features
+## 🚀 GPU Support
+
+This application supports GPU acceleration for faster inference. Follow these steps to enable GPU support:
+
+### Prerequisites
+1. **NVIDIA GPU** with CUDA support
+2. **CUDA Toolkit** (version 11.8 or later)
+3. **cuDNN** library
+
+### Installation Steps
+
+1. **Install PyTorch with CUDA support:**
+   ```bash
+   pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu118
+   ```
+
+2. **Install GPU optimization libraries:**
+   ```bash
+   pip install xformers flash-attn
+   ```
+
+3. **Verify GPU installation:**
+   ```python
+   import torch
+   print(f"CUDA available: {torch.cuda.is_available()}")
+   print(f"GPU count: {torch.cuda.device_count()}")
+   if torch.cuda.is_available():
+       print(f"GPU name: {torch.cuda.get_device_name(0)}")
+   ```
+
+### GPU Features
+- ✅ **Mixed Precision (FP16)**: Reduces memory usage and speeds up inference
+- ✅ **Memory Efficient Attention**: Optimizes memory usage for large models
+- ✅ **Automatic Memory Management**: Clears GPU cache automatically
+- ✅ **CUDA Optimizations**: Enables cuDNN benchmarking for better performance
+
+### Troubleshooting
+If GPU is not detected:
+1. Run the GPU verification script: `python check_gpu.py`
+2. Check if NVIDIA drivers are installed: `nvidia-smi`
+3. Verify CUDA installation: `nvcc --version`
+4. Ensure PyTorch is compiled with CUDA support
+5. Check the GPU diagnostics in the app sidebar
+
+## Features
 
 - **📄 PDF Text Processing**: Extracts and processes content from PDF files
 - **🤖 AI-Powered Q&A**: Uses flan-t5-small for intelligent question answering
@@ -295,6 +339,4 @@ This AI Question Answering System has been successfully deployed and used for:
 
 ---
 
-**Built with ❤️ using Streamlit, Transformers, and PyTorch**#   a i _ q u e s t i o n _ a n s w e r i n g _ s y s t e m  
- #   a i _ q u e s t i o n _ a n s w e r i n g _ s y s t e m  
- 
+**Built with ❤️ using Streamlit, Transformers, and PyTorch**
